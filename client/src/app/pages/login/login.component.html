@@ -1,0 +1,33 @@
+<div class="auth-container">
+  <div class="card auth-card glass">
+    <div class="auth-header">
+      <h1 class="soft-gradient-text">Planora</h1>
+      <p>Sign in to your account</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" [(ngModel)]="email" required placeholder="name@example.com">
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" [(ngModel)]="password" required placeholder="••••••••">
+      </div>
+
+      <div *ngIf="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <button type="submit" class="btn-primary w-full" [disabled]="!loginForm.form.valid">
+        Continue
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <span>Don't have an account?</span>
+      <a routerLink="/register">Create one</a>
+    </div>
+  </div>
+</div>

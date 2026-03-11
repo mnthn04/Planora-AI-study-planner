@@ -1,0 +1,40 @@
+<div class="page-container">
+    <div class="page-header">
+        <a routerLink="/dashboard" class="back-link">← Back to Dashboard</a>
+        <h1>Add New Subject</h1>
+        <p>Enter your syllabus details and let AI plan your studies.</p>
+    </div>
+
+    <div class="card form-card">
+        <form (ngSubmit)="onSubmit()" #subjectForm="ngForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="name">Subject Name</label>
+                    <input type="text" id="name" name="name" [(ngModel)]="name" required
+                        placeholder="e.g. Data Structures & Algorithms">
+                </div>
+
+                <div class="form-group">
+                    <label for="examDate">Exam Date</label>
+                    <input type="date" id="examDate" name="examDate" [(ngModel)]="examDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="dailyHours">Daily Study Hours</label>
+                    <input type="number" id="dailyHours" name="dailyHours" [(ngModel)]="dailyHours" required min="1"
+                        max="24">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="topics">Syllabus Topics (One per line)</label>
+                <textarea id="topics" name="topics" [(ngModel)]="topicsInput" required
+                    placeholder="Arrays&#10;Linked Lists&#10;Stacks&#10;Queues..." rows="6"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary" [disabled]="!subjectForm.form.valid">Create Subject</button>
+            </div>
+        </form>
+    </div>
+</div>

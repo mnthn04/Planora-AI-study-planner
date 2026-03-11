@@ -1,0 +1,50 @@
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div class="logo soft-gradient-text">Planora</div>
+        <nav>
+            <a routerLink="/dashboard" class="active">Dashboard</a>
+            <a routerLink="/subjects">Subjects</a>
+            <a routerLink="/settings">Settings</a>
+        </nav>
+        <div class="spacer"></div>
+        <div class="user-profile" (click)="authService.logout()">
+            <div class="avatar">U</div>
+            <span>{{ (authService.user$ | async)?.fullName }}</span>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="content-header">
+            <h1>My Study Plans</h1>
+            <button class="btn-primary" routerLink="/add-subject">+ New Subject</button>
+        </header>
+
+        <div *ngIf="loading" class="loader">Loading your plans...</div>
+
+        <div *ngIf="!loading && subjects.length === 0" class="empty-state card">
+            <p>No subjects added yet. Start by adding your first subject!</p>
+            <button class="btn-primary" routerLink="/add-subject">Get Started</button>
+        </div>
+
+        <div class="subject-grid">
+            @for (subject of subjects; track subject.id) {
+            <div class="card subject-card">
+                <div class="card-header">
+                    <h3>{{ subject.name }}</h3>
+                    <span class="exam-tag">Exam: {{ subject.examDate | date }}</span>
+                </div>
+                <p class="topics-count">{{ subject.topics.length }} topics</p>
+
+                <div class="card-footer">
+                    <button *ngIf="!subject.studyPlan" class="btn-ai" (click)="generatePlan(subject.id)">
+                        ✨ Generate AI Plan
+                    </button>
+                    <button *ngIf="subject.studyPlan" class="btn-outline" [routerLink]="['/plan', subject.id]">
+                        View Plan
+                    </button>
+                </div>
+            </div>
+            }
+        </div>
+    </main>
+</div>

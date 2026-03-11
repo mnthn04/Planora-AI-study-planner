@@ -1,0 +1,35 @@
+<div class="page-container" *ngIf="subject">
+    <div class="page-header">
+        <a routerLink="/dashboard" class="back-link">← Dashboard</a>
+        <div class="header-main">
+            <h1>{{ subject.name }} Study Plan</h1>
+            <div class="badge soft-gradient">AI Generated</div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="40"></div>
+            </div>
+            <span class="progress-text">40% Completed</span>
+        </div>
+    </div>
+
+    <div class="plan-timeline">
+        @for (day of subject.studyPlan?.days; track day.id) {
+        <div class="timeline-item" [class.completed]="day.isCompleted">
+            <div class="timeline-marker">
+                <div class="marker-dot" (click)="toggleComplete(day)">
+                    <span *ngIf="day.isCompleted">✓</span>
+                </div>
+                <div class="marker-line"></div>
+            </div>
+            <div class="card timeline-content glass">
+                <div class="content-header">
+                    <h3>{{ day.title }}</h3>
+                    <span class="day-label">Day {{ day.dayNumber }}</span>
+                </div>
+                <p class="day-description">{{ day.content }}</p>
+            </div>
+        </div>
+        }
+    </div>
+</div>
