@@ -1,0 +1,43 @@
+using AIStudyPlanner.Application.Common.Interfaces;
+using AIStudyPlanner.Domain.Entities;
+using AIStudyPlanner.Infrastructure.Data;
+using AIStudyPlanner.Infrastructure.Repositories;
+using AIStudyPlanner.Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace AIStudyPlanner.Infrastructure
+{
+    public static class DependencyInjection
+    {
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlite(
+                    configuration.GetConnectionString("DefaultConnection"),
+                    b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+
+            services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 6;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
+            services.AddHttpClient<GeminiStudyPlannerService>();
+            services.AddScoped<IAIService, GeminiStudyPlannerService>();
+            services.AddScoped<IJwtService, JwtService>();
+
+            return services;
+        }
+    }
+}

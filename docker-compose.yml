@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: studyplanner-db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong@Password123
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  backend:
+    build:
+      context: .
+      dockerfile: src/AIStudyPlanner.API/Dockerfile
+    container_name: studyplanner-api
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AIStudyPlannerDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+      - Gemini__ApiKey=${GEMINI_API_KEY}
+      - Jwt__Key=a_very_long_and_secure_secret_key_at_least_32_chars
+      - Jwt__Issuer=AIStudyPlanner
+      - Jwt__Audience=AIStudyPlanner
+    depends_on:
+      - sqlserver
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: studyplanner-ui
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+
+volumes:
+  mssql_data:

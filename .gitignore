@@ -1,0 +1,58 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Visual Studio / .NET
+.vs/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.dbmdl
+*.jfm
+*.pfx
+*.publishsettings
+
+# User-specific configuration and secrets
+appsettings.Development.json
+appsettings.*.json
+secrets.json
+
+# Node.js / Angular
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+dist-server/
+.angular/
+coverage/
+.cache/
+
+# Test files and Logs
+*.log
+*.txt
+AIStudyPlanner.API/Logs/
+client/Logs/
+test-*.js
+
+# Temp files
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.env
+.env.*
+!.env.example
+
+# Documentation/Internal
+IMPLEMENTATION_PLAN.md
