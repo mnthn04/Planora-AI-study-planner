@@ -12,8 +12,8 @@ import { AuthService } from './services/auth.service';
       @if (authService.user$ | async; as user) {
         <aside class="sidebar">
           <div class="logo-container">
-            <div class="logo-icon">A</div>
-            <span class="logo-text">StudyAI</span>
+            <div class="logo-icon">P</div>
+            <span class="logo-text">Planora</span>
           </div>
 
           <nav class="nav-menu">
@@ -23,10 +23,10 @@ import { AuthService } from './services/auth.service';
             <a routerLink="/add-subject" routerLinkActive="active" class="nav-item">
               <span class="icon">➕</span> New Subject
             </a>
-            <a class="nav-item cursor-not-allowed">
+            <a routerLink="/analytics" routerLinkActive="active" class="nav-item">
               <span class="icon">📈</span> Analytics
             </a>
-            <a class="nav-item cursor-not-allowed">
+            <a routerLink="/settings" routerLinkActive="active" class="nav-item">
               <span class="icon">⚙️</span> Settings
             </a>
           </nav>

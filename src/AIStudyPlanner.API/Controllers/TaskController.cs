@@ -31,9 +31,18 @@ namespace AIStudyPlanner.API.Controllers
             // Optional: verify ownership through StudyPlan -> Subject -> UserId
             // For now, simplicity
             
-            if (Enum.TryParse<StudyTaskStatus>(request.Status, out var status))
+            if (Enum.TryParse<StudyTaskStatus>(request.Status, true, out var status))
             {
                 task.Status = status;
+                if (status == StudyTaskStatus.Completed)
+                {
+                    task.CompletedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    task.CompletedAt = null;
+                }
+
                 await _unitOfWork.CompleteAsync();
                 return Ok(task);
             }

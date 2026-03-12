@@ -1,0 +1,57 @@
+<div class="analytics-container">
+    <header class="header">
+        <h1>Analytics</h1>
+        <p class="subtitle">Track your learning progress and growth</p>
+    </header>
+
+    @if (loading) {
+    <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your analytics...</p>
+    </div>
+    } @else if (analyticsData && analyticsData.hasData) {
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label">Total Subjects</span>
+            <span class="stat-value">{{ analyticsData.summary.totalSubjects }}</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Active Plans</span>
+            <span class="stat-value">{{ analyticsData.summary.activePlans }}</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Tasks Completed</span>
+            <span class="stat-value">{{ analyticsData.summary.completedTasks }} / {{ analyticsData.summary.totalTasks
+                }}</span>
+        </div>
+        <div class="stat-card highlight">
+            <span class="stat-label">Overall Progress</span>
+            <span class="stat-value">{{ analyticsData.summary.overallProgress }}%</span>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h3>Task Completion Growth</h3>
+            <p class="chart-desc">Tasks completed over the last 7 days</p>
+            <div class="chart-container">
+                <canvas #taskChart></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h3>Subject Growth</h3>
+            <p class="chart-desc">Cumulative subjects added over time</p>
+            <div class="chart-container">
+                <canvas #subjectChart></canvas>
+            </div>
+        </div>
+    </div>
+    } @else {
+    <div class="no-data-state">
+        <div class="no-data-icon">📊</div>
+        <h2>No data available yet</h2>
+        <p>Start by adding subjects and completing tasks to see your analytics here.</p>
+        <button class="primary-btn" routerLink="/add-subject">Add Your First Subject</button>
+    </div>
+    }
+</div>

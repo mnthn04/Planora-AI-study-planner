@@ -14,9 +14,6 @@ import { AuthService } from '../../services/auth.service';
         <div>
           <h1 class="page-title">Overview</h1>
           <p class="page-subtitle">Welcome back, {{ (authService.user$ | async)?.name }}</p>
-          <div style="background: black; color: white; padding: 10px; font-family: monospace;">
-            Debug: Status={{ debugStatus }} | Subjects={{ subjects.length }} | Loading={{ loading }}
-          </div>
         </div>
         <button routerLink="/add-subject" class="btn btn-primary">
           <span>+</span> New Subject
@@ -145,7 +142,6 @@ export class DashboardComponent implements OnInit {
   subjects: any[] = [];
   loading = true;
   errorMessage = '';
-  debugStatus = 'Init';
 
   private subjectService = inject(SubjectService);
   authService = inject(AuthService);
@@ -173,42 +169,31 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.debugStatus = 'ngOnInit called';
     this.loadSubjects();
   }
 
   loadSubjects() {
-    console.log('--- loadSubjects STRART ---');
-    this.debugStatus = 'Calling loadSubjects';
     this.loading = true;
     this.errorMessage = '';
 
     const obs$ = this.subjectService.getSubjects();
-    console.log('Observable created:', obs$);
 
     obs$.subscribe({
       next: (data) => {
-        console.log('next() fired with:', data);
-        this.debugStatus = `next() Received data. Type: ${typeof data}. IsArray: ${Array.isArray(data)}`;
         this.subjects = data;
         this.loading = false;
-        this.debugStatus += ` | UI Updated? Loading=${this.loading}, Count=${this.subjects.length}`;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.log('error() fired with:', err);
-        this.debugStatus = `error() Handler Called: ${err.message || 'Unknown HTTP Error'}`;
         console.error('Error loading subjects:', err);
         this.errorMessage = 'We couldn\'t load your subjects. Error: ' + err.message;
         this.loading = false;
         this.cdr.detectChanges();
       },
       complete: () => {
-        console.log('complete() fired!');
       }
     });
 
-    console.log('--- loadSubjects subscribe() CALLED ---');
   }
 
   deleteSubject(event: Event, id: string) {

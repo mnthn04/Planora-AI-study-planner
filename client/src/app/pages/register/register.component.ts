@@ -5,115 +5,91 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
-    selector: 'app-register',
-    standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule],
-    template: `
-    <div class="auth-container">
-      <div class="glass-card auth-card">
-        <h2 class="auth-title">Create Account</h2>
-        <p class="auth-subtitle">Start your personalized study journey</p>
-        
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" formControlName="name" placeholder="John Doe">
-          </div>
-          
-          <div class="form-group">
-            <label>Email</label>
-            <input type="email" formControlName="email" placeholder="john@example.com">
-          </div>
-          
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" formControlName="password" placeholder="••••••••">
-          </div>
-          
-          @if (error) {
-            <p class="error-msg">{{ error }}</p>
-          }
-          
-          <button type="submit" class="btn-primary auth-btn" [disabled]="registerForm.invalid || loading">
-            {{ loading ? 'Creating...' : 'Register' }}
-          </button>
-        </form>
-        
-        <p class="auth-footer">
-          Already have an account? <a routerLink="/login">Login</a>
-        </p>
-      </div>
-    </div>
-  `,
-    styles: [`
-    .auth-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: calc(100vh - 100px);
-    }
-    .auth-card {
-      width: 100%;
-      max-width: 400px;
-    }
-    .auth-title {
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .auth-subtitle {
-      text-align: center;
-      color: var(--text-muted);
-      margin-bottom: 32px;
-    }
-    .auth-btn {
-      width: 100%;
-      margin-top: 10px;
-    }
-    .auth-footer {
-      text-align: center;
-      margin-top: 24px;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-    .auth-footer a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .error-msg {
-      color: #ef4444;
-      font-size: 0.875rem;
-      margin-bottom: 16px;
-    }
-  `]
+  selector: 'app-register',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-    private fb = inject(FormBuilder);
-    private authService = inject(AuthService);
-    private router = inject(Router);
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-    registerForm = this.fb.group({
-        name: ['', Validators.required],
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]]
-    });
+  // Password regex: at least 8 characters, one uppercase, one lowercase, one number, and one special character
+  passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-    loading = false;
-    error = '';
+  registerForm = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.pattern(this.passwordPattern)]]
+  });
 
-    onSubmit() {
-        if (this.registerForm.valid) {
-            this.loading = true;
-            this.error = '';
-            this.authService.register(this.registerForm.value).subscribe({
-                next: () => {
-                    this.router.navigate(['/login']);
-                },
-                error: (err) => {
-                    this.error = 'Registration failed. Try again.';
-                    this.loading = false;
-                }
-            });
+  loading = false;
+  error = '';
+
+  onSubmit() {
+    if (this.registerForm.valid) {
+      this.loading = true;
+      this.error = '';
+
+      this.authService.register(this.registerForm.value).subscribe({
+        next: () => {
+          this.loading = false;
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          this.loading = false;
+
+          let errorMessage = 'Registration failed. Try again.';
+          let isDuplicate = false;
+
+          // Robustly parse the error response
+          if (err.error) {
+            const errorData = err.error;
+
+            // Check if it's an array of Identity errors
+            if (Array.isArray(errorData)) {
+              const duplicate = errorData.find((e: any) =>
+                e.code === 'DuplicateEmail' ||
+                e.code === 'DuplicateUserName' ||
+                (e.description && e.description.toLowerCase().includes('already taken'))
+              );
+
+              if (duplicate) {
+                isDuplicate = true;
+                errorMessage = 'This email already exists! Please use a different one.';
+              } else {
+                errorMessage = errorData[0]?.description || errorMessage;
+              }
+            }
+            // Check if it's a single object error
+            else if (typeof errorData === 'object') {
+              errorMessage = errorData.message || errorData.description || errorMessage;
+              if (errorMessage.toLowerCase().includes('already exists')) {
+                isDuplicate = true;
+              }
+            }
+            // Check if it's a string
+            else if (typeof errorData === 'string') {
+              errorMessage = errorData;
+            }
+          }
+
+          this.error = errorMessage;
+
+          if (isDuplicate) {
+            // Use setTimeout to allow Angular to update the UI and remove the loader 
+            // before the blocking alert() pops up
+            setTimeout(() => {
+              alert('This email already exists!');
+            }, 100);
+          }
         }
+      });
     }
+  }
+
+  // Helper to check for specific validation errors in the UI
+  get f() { return this.registerForm.controls; }
 }

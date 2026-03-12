@@ -39,6 +39,19 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  updateProfile(name: string) {
+    return this.http.put<any>(`${this.apiUrl}/profile`, { name }).pipe(
+      tap(res => {
+        const user = this.userSubject.value;
+        if (user) {
+          const updatedUser = { ...user, name: res.name };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          this.userSubject.next(updatedUser);
+        }
+      })
+    );
+  }
+
   getToken() {
     return this.userSubject.value?.token;
   }

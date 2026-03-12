@@ -3,7 +3,7 @@ version: '3.8'
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: studyplanner-db
+    container_name: planora-db
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=YourStrong@Password123
@@ -16,16 +16,16 @@ services:
     build:
       context: .
       dockerfile: src/AIStudyPlanner.API/Dockerfile
-    container_name: studyplanner-api
+    container_name: planora-api
     ports:
       - "5000:5000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AIStudyPlannerDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=PlanoraDb;User Id=sa;Password=YourStrong@Password123;TrustServerCertificate=True;
       - Gemini__ApiKey=${GEMINI_API_KEY}
       - Jwt__Key=a_very_long_and_secure_secret_key_at_least_32_chars
-      - Jwt__Issuer=AIStudyPlanner
-      - Jwt__Audience=AIStudyPlanner
+      - Jwt__Issuer=Planora
+      - Jwt__Audience=Planora
     depends_on:
       - sqlserver
 
@@ -33,7 +33,7 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
-    container_name: studyplanner-ui
+    container_name: planora-ui
     ports:
       - "4200:4200"
     depends_on:

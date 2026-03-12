@@ -11,6 +11,8 @@ namespace AIStudyPlanner.Domain.Entities
         public DateTime ExamDate { get; set; }
         public int DailyStudyHours { get; set; }
         
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
         public ICollection<Topic> Topics { get; set; } = new List<Topic>();
         public StudyPlan? StudyPlan { get; set; }
     }
