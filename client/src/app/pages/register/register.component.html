@@ -1,39 +1,113 @@
-<div class="auth-container">
-    <div class="card auth-card glass">
-        <div class="auth-header">
-            <h1 class="soft-gradient-text">Planora</h1>
-            <p>Create your account</p>
+<div class="split-layout">
+    <!-- Left Panel: Visual/Motivational -->
+    <div class="visual-panel">
+        <div class="visual-content">
+            <div class="logo-badge">
+                <div class="logo-icon-mini">P</div>
+                <span>Planora</span>
+            </div>
+            <h1 class="visual-title">Start Your<br>Journey Today.</h1>
+            <p class="visual-description">
+                Join thousands of students who have optimized their study time with Planora.
+                Create your personalized roadmap to success in minutes.
+            </p>
+
+            <!-- Floating UI elements for depth -->
+            <div class="floating-elements">
+                <div class="floating-card card-1 animate-float">
+                    <div class="card-dot"></div>
+                    <div class="card-line long"></div>
+                    <div class="card-line short"></div>
+                </div>
+                <div class="floating-card card-2 animate-float-delay">
+                    <div class="card-dot accent"></div>
+                    <div class="card-line long"></div>
+                </div>
+                <div class="floating-card card-3 animate-float-slow">
+                    <div class="card-dot primary"></div>
+                    <div class="card-line short"></div>
+                </div>
+            </div>
         </div>
+        <div class="visual-bg-pattern"></div>
+    </div>
 
-        <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
-            <div class="form-group">
-                <label for="fullName">Full Name</label>
-                <input type="text" id="fullName" name="fullName" [(ngModel)]="fullName" required placeholder="John Doe">
+    <!-- Right Panel: Auth Form -->
+    <div class="form-panel">
+        <div class="auth-card-wrapper animate-fade-in">
+            <div class="auth-card glass-card">
+                <div class="auth-header">
+                    <h2 class="auth-title">Create Account</h2>
+                    <p class="auth-subtitle">Start your personalized study journey</p>
+                </div>
+
+                <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+                    <div class="form-group">
+                        <label class="input-label">Full Name</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <input type="text" formControlName="name" class="input-field"
+                                [class.invalid]="f.name.invalid && f.name.touched" placeholder="John Doe">
+                        </div>
+                        <p class="validation-hint" *ngIf="f.name.invalid && f.name.touched">Name is required (min 2
+                            chars)</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="input-label">Email</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                                </path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            <input type="email" formControlName="email" class="input-field"
+                                [class.invalid]="f.email.invalid && f.email.touched" placeholder="name@example.com">
+                        </div>
+                        <p class="validation-hint" *ngIf="f.email.invalid && f.email.touched">Please enter a valid email
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="input-label">Password</label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <input type="password" formControlName="password" class="input-field"
+                                [class.invalid]="f.password.invalid && f.password.touched" placeholder="••••••••">
+                        </div>
+                        <div class="password-validation-grid" [class.visible]="f.password.touched">
+                            <p [class.valid]="!f.password.errors?.['pattern'] && !f.password.errors?.['required']">
+                                8+ chars, Upper/Lower, 1 Num, 1 Special Symbol
+                            </p>
+                        </div>
+                    </div>
+
+                    @if (error) {
+                    <p class="error-msg animate-shake">{{ error }}</p>
+                    }
+
+                    <button type="submit" class="btn btn-primary auth-btn" [disabled]="registerForm.invalid || loading">
+                        <span *ngIf="!loading">Create Account</span>
+                        <span *ngIf="loading" class="loader"></span>
+                    </button>
+
+                    <p class="trust-copy">Your study plans are securely stored.</p>
+                </form>
+
+                <div class="auth-footer">
+                    <span>Already have an account?</span>
+                    <a routerLink="/login" class="footer-link">Login</a>
+                </div>
             </div>
-
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" [(ngModel)]="email" required placeholder="name@example.com">
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" [(ngModel)]="password" required
-                    placeholder="••••••••">
-            </div>
-
-            <div *ngIf="error" class="error-message">
-                {{ error }}
-            </div>
-
-            <button type="submit" class="btn-primary w-full" [disabled]="!registerForm.form.valid">
-                Create Account
-            </button>
-        </form>
-
-        <div class="auth-footer">
-            <span>Already have an account?</span>
-            <a routerLink="/login">Sign in</a>
         </div>
     </div>
 </div>

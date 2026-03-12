@@ -11,6 +11,7 @@ namespace AIStudyPlanner.Domain.Entities
         public string TopicName { get; set; } = string.Empty;
         public string Activities { get; set; } = string.Empty;
         public StudyTaskStatus Status { get; set; } = StudyTaskStatus.Pending;
+        public DateTime? CompletedAt { get; set; }
 
         public StudyPlan StudyPlan { get; set; } = null!;
     }

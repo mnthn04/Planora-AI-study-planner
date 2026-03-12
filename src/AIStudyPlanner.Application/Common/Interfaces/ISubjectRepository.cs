@@ -9,5 +9,6 @@ namespace AIStudyPlanner.Application.Common.Interfaces
     {
         Task<IEnumerable<Subject>> GetSubjectsByUserIdAsync(string userId);
         Task<Subject?> GetSubjectWithDetailsAsync(Guid id);
+        Task<IEnumerable<Subject>> GetSubjectsForAnalyticsAsync(string userId);
     }
 }

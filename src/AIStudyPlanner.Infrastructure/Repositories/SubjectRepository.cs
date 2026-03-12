@@ -16,6 +16,7 @@ namespace AIStudyPlanner.Infrastructure.Repositories
         public async Task<IEnumerable<Subject>> GetSubjectsByUserIdAsync(string userId)
         {
             return await _context.Subjects
+                .AsNoTracking()
                 .Where(s => s.UserId == userId)
                 .Include(s => s.Topics)
                 .Include(s => s.StudyPlan)
@@ -30,6 +31,32 @@ namespace AIStudyPlanner.Infrastructure.Repositories
                 .Include(s => s.StudyPlan)
                 .ThenInclude(p => p.StudyTasks)
                 .FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        public async Task<IEnumerable<Subject>> GetSubjectsForAnalyticsAsync(string userId)
+        {
+            return await _context.Subjects
+                .AsNoTracking()
+                .Where(s => s.UserId == userId)
+                .Include(s => s.StudyPlan)
+                .ThenInclude(p => p.StudyTasks)
+                .Select(s => new Subject
+                {
+                    Id = s.Id,
+                    UserId = s.UserId,
+                    CreatedAt = s.CreatedAt,
+                    SubjectName = s.SubjectName,
+                    StudyPlan = s.StudyPlan != null ? new StudyPlan
+                    {
+                        Id = s.StudyPlan.Id,
+                        StudyTasks = s.StudyPlan.StudyTasks.Select(t => new StudyTask
+                        {
+                            Status = t.Status,
+                            CompletedAt = t.CompletedAt
+                        }).ToList()
+                    } : null
+                })
+                .ToListAsync();
         }
     }
 }

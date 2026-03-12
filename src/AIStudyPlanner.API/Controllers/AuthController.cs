@@ -1,15 +1,17 @@
 using AIStudyPlanner.Application.Common.Interfaces;
 using AIStudyPlanner.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace AIStudyPlanner.API.Controllers
 {
     [ApiController]
     [Route("api/auth")]
-    public class AuthController : ControllerBase
+    public class AuthController : BaseController
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IJwtService _jwtService;
@@ -53,7 +55,31 @@ namespace AIStudyPlanner.API.Controllers
 
             return Unauthorized();
         }
+
+        [Authorize]
+        [HttpPut("profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+        {
+            if (string.IsNullOrEmpty(UserId)) return Unauthorized();
+
+            var user = await _userManager.FindByIdAsync(UserId);
+            if (user == null) return NotFound();
+
+            user.Name = request.Name;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return Ok(new { Name = user.Name, Email = user.Email });
+            }
+
+            return BadRequest(result.Errors);
+        }
     }
+
+    public record UpdateProfileRequest(
+        [Required][MinLength(2)] string Name
+    );
 
     public record RegisterRequest(
         [Required][EmailAddress] string Email, 

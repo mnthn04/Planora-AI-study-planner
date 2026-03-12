@@ -1,6 +1,6 @@
-@AIStudyPlanner.API_HostAddress = http://localhost:5178
+@Planora.API_HostAddress = http://localhost:5178
 
-GET {{AIStudyPlanner.API_HostAddress}}/weatherforecast/
+GET {{Planora.API_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###

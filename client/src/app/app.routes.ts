@@ -4,6 +4,8 @@ import { RegisterComponent } from './pages/register/register.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { AddSubjectComponent } from './pages/add-subject/add-subject.component';
 import { PlanViewComponent } from './pages/plan-view/plan-view.component';
+import { AnalyticsComponent } from './pages/analytics/analytics.component';
+import { SettingsComponent } from './pages/settings/settings.component';
 import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
@@ -14,4 +16,6 @@ export const routes: Routes = [
     { path: 'add-subject', component: AddSubjectComponent, canActivate: [authGuard] },
     { path: 'edit-subject/:id', component: AddSubjectComponent, canActivate: [authGuard] },
     { path: 'plan/:id', component: PlanViewComponent, canActivate: [authGuard] },
+    { path: 'analytics', component: AnalyticsComponent, canActivate: [authGuard] },
+    { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
 ];
