@@ -74,9 +74,15 @@ import { AuthService } from '../../services/auth.service';
               </div>
               
               <div class="difficulty-level">
-                <div class="level-pill" [class]="subject.globalDifficulty?.toLowerCase() || 'none'">
-                  {{ subject.globalDifficulty || 'Pending' }}
-                </div>
+                @if (isSubjectCompleted(subject)) {
+                  <div class="level-pill completed">
+                    Completed
+                  </div>
+                } @else {
+                  <div class="level-pill" [class]="subject.globalDifficulty?.toLowerCase() || 'none'">
+                    {{ subject.globalDifficulty || 'Pending' }}
+                  </div>
+                }
               </div>
 
               <div class="card-actions">
@@ -121,12 +127,32 @@ import { AuthService } from '../../services/auth.service';
     .level-pill.medium { background: #FEF3C7; color: #D97706; }
     .level-pill.low { background: #DCFCE7; color: #10B981; }
     .level-pill.none { background: #F3F4F6; color: #6B7280; }
+    .level-pill.completed { background: #10B981; color: white; }
 
     .card-actions { position: absolute; top: 16px; right: 16px; display: flex; gap: 8px; opacity: 0; transition: opacity 0.2s; }
     .subject-card:hover .card-actions { opacity: 1; }
     .btn-icon { background: white; border: 1px solid #E5E7EB; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
     .btn-icon:hover { border-color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
     .btn-delete:hover { border-color: #EF4444; color: #EF4444; }
+    
+    .btn-ai-mini { 
+      width: 100%; 
+      padding: 10px; 
+      border-radius: 12px; 
+      border: none; 
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); 
+      color: white; 
+      font-weight: 600; 
+      font-size: 0.875rem; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+    .btn-ai-mini:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+      filter: brightness(1.1);
+    }
 
     .empty-state, .error-state { text-align: center; padding: 64px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
     .empty-icon, .error-icon { font-size: 3rem; margin-bottom: 8px; }
@@ -149,6 +175,14 @@ export class DashboardComponent implements OnInit {
 
   get activePlansCount() {
     return this.subjects.filter(s => s.studyPlan).length;
+  }
+
+  isSubjectCompleted(subject: any): boolean {
+    const plan = subject.studyPlan;
+    if (!plan || !plan.studyTasks || plan.studyTasks.length === 0) return false;
+
+    const completedTasks = plan.studyTasks.filter((t: any) => t.status === 1 || t.status === 'Completed').length;
+    return completedTasks === plan.studyTasks.length;
   }
 
   get overallProgress() {

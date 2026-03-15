@@ -15,6 +15,17 @@ export interface AnalyticsData {
         taskGrowth: Array<{ date: string; completedCount: number }>;
         subjectGrowth: Array<{ date: string; createdCount: number }>;
     };
+    testStats?: {
+        totalTests: number;
+        averageScore: number;
+        highestScore: number;
+        recentScores: Array<{
+            subjectName: string;
+            score: number;
+            totalQuestions: number;
+            createdAt: string;
+        }>;
+    };
 }
 
 @Injectable({
