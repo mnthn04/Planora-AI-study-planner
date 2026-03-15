@@ -16,6 +16,9 @@ namespace AIStudyPlanner.Infrastructure.Data
         public DbSet<Topic> Topics { get; set; }
         public DbSet<StudyPlan> StudyPlans { get; set; }
         public DbSet<StudyTask> StudyTasks { get; set; }
+        public DbSet<Flashcard> Flashcards { get; set; }
+        public DbSet<PracticeTest> PracticeTests { get; set; }
+        public DbSet<PracticeQuestion> PracticeQuestions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -48,6 +51,30 @@ namespace AIStudyPlanner.Infrastructure.Data
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Status).HasConversion<string>();
+                
+                entity.HasMany(t => t.Flashcards)
+                    .WithOne(f => f.StudyTask)
+                    .HasForeignKey(f => f.StudyTaskId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<Flashcard>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+            });
+
+            builder.Entity<PracticeTest>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasMany(t => t.Questions)
+                    .WithOne(q => q.PracticeTest)
+                    .HasForeignKey(q => q.PracticeTestId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<PracticeQuestion>(entity =>
+            {
+                entity.HasKey(e => e.Id);
             });
         }
     }

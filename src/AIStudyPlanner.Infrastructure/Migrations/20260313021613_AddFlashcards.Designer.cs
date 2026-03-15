@@ -3,6 +3,7 @@ using System;
 using AIStudyPlanner.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AIStudyPlanner.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260313021613_AddFlashcards")]
+    partial class AddFlashcards
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -113,85 +116,6 @@ namespace AIStudyPlanner.Infrastructure.Migrations
                     b.HasIndex("StudyTaskId");
 
                     b.ToTable("Flashcards");
-                });
-
-            modelBuilder.Entity("AIStudyPlanner.Domain.Entities.PracticeQuestion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CorrectAnswer")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Explanation")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OptionA")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OptionB")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OptionC")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OptionD")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("PracticeTestId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("QuestionText")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UserAnswer")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PracticeTestId");
-
-                    b.ToTable("PracticeQuestions");
-                });
-
-            modelBuilder.Entity("AIStudyPlanner.Domain.Entities.PracticeTest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Score")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("SubjectId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SubjectName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("TotalQuestions")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PracticeTests");
                 });
 
             modelBuilder.Entity("AIStudyPlanner.Domain.Entities.StudyPlan", b =>
@@ -439,17 +363,6 @@ namespace AIStudyPlanner.Infrastructure.Migrations
                     b.Navigation("StudyTask");
                 });
 
-            modelBuilder.Entity("AIStudyPlanner.Domain.Entities.PracticeQuestion", b =>
-                {
-                    b.HasOne("AIStudyPlanner.Domain.Entities.PracticeTest", "PracticeTest")
-                        .WithMany("Questions")
-                        .HasForeignKey("PracticeTestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PracticeTest");
-                });
-
             modelBuilder.Entity("AIStudyPlanner.Domain.Entities.StudyPlan", b =>
                 {
                     b.HasOne("AIStudyPlanner.Domain.Entities.Subject", "Subject")
@@ -532,11 +445,6 @@ namespace AIStudyPlanner.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("AIStudyPlanner.Domain.Entities.PracticeTest", b =>
-                {
-                    b.Navigation("Questions");
                 });
 
             modelBuilder.Entity("AIStudyPlanner.Domain.Entities.StudyPlan", b =>

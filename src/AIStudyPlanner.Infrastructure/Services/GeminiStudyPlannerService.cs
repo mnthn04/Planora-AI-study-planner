@@ -18,12 +18,7 @@ namespace AIStudyPlanner.Infrastructure.Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<GeminiStudyPlannerService> _logger;
         private readonly string _apiKey;
-        private const string Url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-
-        // Simple Rate Limiting: 10 requests per minute
-        private static readonly SemaphoreSlim _rateLimiter = new SemaphoreSlim(2, 2); // Allow 2 concurrent requests
-        private static DateTime _lastRequestTime = DateTime.MinValue;
-        private static readonly TimeSpan _minInterval = TimeSpan.FromSeconds(6); // 10 per minute = 1 every 6 seconds
+        private const string Url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
         public GeminiStudyPlannerService(HttpClient httpClient, IConfiguration configuration, ILogger<GeminiStudyPlannerService> logger)
         {
@@ -31,27 +26,16 @@ namespace AIStudyPlanner.Infrastructure.Services
             _logger = logger;
             _apiKey = configuration["Gemini:ApiKey"] 
                       ?? Environment.GetEnvironmentVariable("GEMINI_API_KEY")
+                      ?? configuration["GEMINI_API_KEY"]
                       ?? throw new ArgumentNullException("Gemini:ApiKey or GEMINI_API_KEY is missing");
         }
 
         public async Task<List<GeminiPlanItem>> GenerateStudyPlanAsync(string subject, List<string> topics, string difficulty, DateTime examDate, int dailyHours)
         {
-            _logger.LogInformation("Generating study plan for subject: {Subject} using Gemini 2.5 Flash", subject);
+            _logger.LogInformation("Generating study plan for subject: {Subject} using Gemini 2.0 Flash", subject);
 
-            // Wait for rate limiter
-            await _rateLimiter.WaitAsync();
             try
             {
-                var now = DateTime.UtcNow;
-                var elapsedSinceLast = now - _lastRequestTime;
-                if (elapsedSinceLast < _minInterval)
-                {
-                    var delay = _minInterval - elapsedSinceLast;
-                    _logger.LogWarning("Rate Limit: Waiting for {Delay}ms before calling Gemini API", delay.TotalMilliseconds);
-                    await Task.Delay(delay);
-                }
-                _lastRequestTime = DateTime.UtcNow;
-
                 var today = DateTime.UtcNow;
                 var totalDaysToExam = (int)(examDate.Date - today.Date).TotalDays;
                 if (totalDaysToExam < 1) totalDaysToExam = 1;
@@ -94,68 +78,184 @@ namespace AIStudyPlanner.Infrastructure.Services
                     contents = new[] { new { parts = new[] { new { text = prompt } } } }
                 };
 
-                var jsonRequest = JsonConvert.SerializeObject(requestBody);
-                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-
-                var requestUrl = $"{Url}?key={_apiKey}";
-                _logger.LogInformation("Calling Gemini API: {Url}", requestUrl.Replace(_apiKey, "REDACTED"));
-                
-                var response = await _httpClient.PostAsync(requestUrl, content);
+                var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync($"{Url}?key={_apiKey}", content);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var error = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Gemini API Error (Status: {StatusCode}): {Error}", response.StatusCode, error);
-                    throw new Exception($"Gemini API returned error: {response.StatusCode} - {error}");
+                    throw new Exception($"Gemini API error: {error}");
                 }
 
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                _logger.LogTrace("Gemini Raw Response: {Response}", jsonResponse);
-                
+                _logger.LogInformation("Gemini Raw Response: {Response}", jsonResponse);
+
                 var dynamicResponse = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
                 
                 if (dynamicResponse.candidates == null || dynamicResponse.candidates.Count == 0)
                 {
-                    _logger.LogError("Gemini API returned no candidates. Response: {Response}", jsonResponse);
-                    throw new Exception("Gemini API returned no candidates. This might be due to safety filters.");
+                    var reason = dynamicResponse.promptFeedback?.blockReason ?? "Unknown";
+                    throw new Exception($"Gemini returned no candidates. Reason: {reason}");
                 }
 
-                var candidate = dynamicResponse.candidates[0];
-                if (candidate.content == null || candidate.content.parts == null || candidate.content.parts.Count == 0)
+                string rawText = dynamicResponse.candidates[0].content.parts[0].text;
+                _logger.LogInformation("Gemini Raw Text: {Text}", rawText);
+
+                // More robust JSON extraction
+                var jsonStart = rawText.IndexOf('[');
+                var jsonEnd = rawText.LastIndexOf(']');
+                
+                if (jsonStart != -1 && jsonEnd != -1 && jsonEnd > jsonStart)
                 {
-                    _logger.LogError("Gemini API candidate has no content parts. Response: {Response}", jsonResponse);
-                    throw new Exception("Gemini API candidate has no content parts.");
+                    rawText = rawText.Substring(jsonStart, jsonEnd - jsonStart + 1);
+                }
+                else if (rawText.Contains("```json"))
+                {
+                    rawText = rawText.Split("```json")[1].Split("```")[0].Trim();
+                }
+                else if (rawText.Contains("```"))
+                {
+                    rawText = rawText.Split("```")[1].Split("```")[0].Trim();
                 }
 
-                string rawText = candidate.content.parts[0].text;
-
-                if (rawText.Contains("```json"))
-                    rawText = rawText.Split("```json")[1].Split("```")[0].Trim();
-                else if (rawText.Contains("```"))
-                    rawText = rawText.Split("```")[1].Split("```")[0].Trim();
-
-                _logger.LogInformation("Successfully generated Gemini plan for {Subject}", subject);
-                var items = JsonConvert.DeserializeObject<List<GeminiPlanItem>>(rawText);
-                return items ?? throw new Exception("Failed to deserialize Gemini response into PlanItems.");
+                _logger.LogInformation("Extracted JSON: {Json}", rawText);
+                return JsonConvert.DeserializeObject<List<GeminiPlanItem>>(rawText) ?? new List<GeminiPlanItem>();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Gemini API failed or returned invalid data. Using internal fallback mock plan for {Subject}.", subject);
-                
-                // Internal fallback to ensure user gets SOMETHING even if API fails
-                // Using distinct topics to confirm this new code is running
-                return new List<GeminiPlanItem>
-                {
-                    new GeminiPlanItem { Day = 1, Topic = $"Introduction to {subject} (Flash Plan)", Activities = new[] { "Overview of core concepts", "Initial setup and environment" } },
-                    new GeminiPlanItem { Day = 2, Topic = "Fundamental Concepts & Overview", Activities = new[] { "Deep dive into fundamentals", "Basic examples and exercises" } },
-                    new GeminiPlanItem { Day = 3, Topic = "Core Topic Deep Dive", Activities = new[] { "Advanced concepts", "Practical implementation" } },
-                    new GeminiPlanItem { Day = 4, Topic = "Practical Application & Practice", Activities = new[] { "Hands-on projects", "Troubleshooting common issues" } },
-                    new GeminiPlanItem { Day = 5, Topic = "Comprehensive Review & Revision", Activities = new[] { "Final review of all topics", "Exam strategy and practice tests" } }
-                };
+                _logger.LogError(ex, "Gemini API failed in GenerateStudyPlanAsync.");
+                throw;
             }
-            finally
+        }
+
+        public async Task<List<FlashcardItem>> GenerateFlashcardsAsync(string topic, string activities)
+        {
+            _logger.LogInformation("Generating flashcards for topic: {Topic}", topic);
+            try
             {
-                _rateLimiter.Release();
+                var prompt = $@"Create 5 flashcards for: {topic}. Return ONLY JSON array of {{""question"", ""answer""}} objects.";
+                var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
+                var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync($"{Url}?key={_apiKey}", content);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Gemini Flashcards API error: {Error}", error);
+                    throw new Exception($"Gemini Flashcards API error: {error}");
+                }
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var dynamicResponse = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
+                
+                if (dynamicResponse.candidates == null || dynamicResponse.candidates.Count == 0)
+                {
+                    _logger.LogWarning("Gemini returned no candidates for flashcards.");
+                    throw new Exception("Gemini returned no candidates for flashcards.");
+                }
+
+                string rawText = dynamicResponse.candidates[0].content.parts[0].text;
+                
+                // Extract JSON array
+                var jsonStart = rawText.IndexOf('[');
+                var jsonEnd = rawText.LastIndexOf(']');
+                
+                if (jsonStart != -1 && jsonEnd != -1 && jsonEnd > jsonStart)
+                {
+                    rawText = rawText.Substring(jsonStart, jsonEnd - jsonStart + 1);
+                }
+                else if (rawText.Contains("```json"))
+                {
+                    rawText = rawText.Split("```json")[1].Split("```")[0].Trim();
+                }
+
+                _logger.LogInformation("Extracted Flashcards JSON: {Json}", rawText);
+                return JsonConvert.DeserializeObject<List<FlashcardItem>>(rawText) ?? new List<FlashcardItem>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Gemini Flashcards generation failed.");
+                throw;
+            }
+        }
+
+        public async Task<List<PracticeTestItem>> GeneratePracticeTestAsync(string subject, List<string> topics)
+        {
+            Console.WriteLine($"[DEBUG] GeneratePracticeTestAsync: {subject}");
+            try
+            {
+                var topicList = string.Join(", ", topics);
+                var prompt = $@"
+                    Generate 10 multiple-choice questions (MCQs) for the subject '{subject}' covering these topics: {topicList}.
+                    
+                    For each question:
+                    1. Provide a clear and challenging question.
+                    2. Provide 4 distinct options.
+                    3. Identify the correct answer (must be one of the option letters: 'A', 'B', 'C', or 'D').
+                    4. Provide a detailed explanation of why the answer is correct.
+
+                    Rules:
+                    - Return ONLY a JSON array.
+                    - Do not include any introductory or concluding text.
+                    - Ensure the JSON is valid and follows this structure:
+                    [
+                      {{
+                        ""question"": ""What is the main purpose of polymorphism in OOP?"",
+                        ""options"": [
+                          ""To reduce memory usage"",
+                          ""To allow objects to take multiple forms"",
+                          ""To hide internal implementation details"",
+                          ""To speed up execution time""
+                        ],
+                        ""correctAnswer"": ""B"",
+                        ""explanation"": ""Polymorphism allows objects of different classes to be treated as objects of a common superclass, enabling a single interface to represent different underlying forms.""
+                      }}
+                    ]
+                ";
+
+                var requestBody = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
+                var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
+                
+                Console.WriteLine("[DEBUG] Posting to Gemini...");
+                var response = await _httpClient.PostAsync($"{Url}?key={_apiKey}", content);
+                Console.WriteLine($"[DEBUG] Response: {response.StatusCode}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Gemini Practice Test API error: {error}");
+                }
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var dynamicResponse = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
+
+                if (dynamicResponse.candidates == null || dynamicResponse.candidates.Count == 0)
+                {
+                    throw new Exception("Gemini returned no candidates for practice test.");
+                }
+
+                string rawText = dynamicResponse.candidates[0].content.parts[0].text;
+                _logger.LogInformation("Gemini Practice Test Raw Text: {Text}", rawText);
+
+                // Robust JSON extraction
+                var jsonStart = rawText.IndexOf('[');
+                var jsonEnd = rawText.LastIndexOf(']');
+                
+                if (jsonStart != -1 && jsonEnd != -1 && jsonEnd > jsonStart)
+                {
+                    rawText = rawText.Substring(jsonStart, jsonEnd - jsonStart + 1);
+                }
+                else if (rawText.Contains("```json"))
+                {
+                    rawText = rawText.Split("```json")[1].Split("```")[0].Trim();
+                }
+
+                return JsonConvert.DeserializeObject<List<PracticeTestItem>>(rawText) ?? new List<PracticeTestItem>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DEBUG] Catch: {ex.Message}");
+                throw;
             }
         }
     }

@@ -10,6 +10,7 @@ namespace AIStudyPlanner.Application.Common.Interfaces
         IRepository<Topic> Topics { get; }
         IRepository<StudyPlan> StudyPlans { get; }
         IRepository<StudyTask> StudyTasks { get; }
+        IRepository<Flashcard> Flashcards { get; }
         Task<int> CompleteAsync();
     }
 }

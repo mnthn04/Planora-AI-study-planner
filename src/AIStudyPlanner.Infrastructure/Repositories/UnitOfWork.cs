@@ -18,12 +18,14 @@ namespace AIStudyPlanner.Infrastructure.Repositories
             Topics = new Repository<Topic>(_context);
             StudyPlans = new Repository<StudyPlan>(_context);
             StudyTasks = new Repository<StudyTask>(_context);
+            Flashcards = new Repository<Flashcard>(_context);
         }
 
         public ISubjectRepository Subjects { get; private set; }
         public IRepository<Topic> Topics { get; private set; }
         public IRepository<StudyPlan> StudyPlans { get; private set; }
         public IRepository<StudyTask> StudyTasks { get; private set; }
+        public IRepository<Flashcard> Flashcards { get; private set; }
 
         public async Task<int> CompleteAsync() => await _context.SaveChangesAsync();
 

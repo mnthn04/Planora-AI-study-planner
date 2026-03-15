@@ -3,6 +3,7 @@ using AIStudyPlanner.Domain.Entities;
 using AIStudyPlanner.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,10 +16,12 @@ namespace AIStudyPlanner.API.Controllers
     public class AnalyticsController : BaseController
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public AnalyticsController(IUnitOfWork unitOfWork)
+        public AnalyticsController(IUnitOfWork unitOfWork, IApplicationDbContext context)
         {
             _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         [HttpGet]
@@ -61,6 +64,18 @@ namespace AIStudyPlanner.API.Controllers
                 CreatedCount = subjects.Count(s => s.CreatedAt.Date <= date)
             }).ToList();
 
+            var practiceTests = await _context.PracticeTests
+                .Where(t => t.UserId == UserId!)
+                .ToListAsync();
+
+            var testStats = practiceTests.Any() ? new
+            {
+                TotalTests = practiceTests.Count,
+                AverageScore = Math.Round(practiceTests.Average(t => (double)t.Score / t.TotalQuestions * 100), 1),
+                HighestScore = practiceTests.Max(t => (double)t.Score / t.TotalQuestions * 100),
+                RecentScores = practiceTests.OrderByDescending(t => t.CreatedAt).Take(5).Select(t => new { t.SubjectName, t.Score, t.TotalQuestions, t.CreatedAt })
+            } : null;
+
             return Ok(new
             {
                 hasData = true,
@@ -76,7 +91,8 @@ namespace AIStudyPlanner.API.Controllers
                 {
                     taskGrowth,
                     subjectGrowth
-                }
+                },
+                testStats
             });
         }
     }

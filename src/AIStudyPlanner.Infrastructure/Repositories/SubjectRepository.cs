@@ -30,6 +30,7 @@ namespace AIStudyPlanner.Infrastructure.Repositories
                 .Include(s => s.Topics)
                 .Include(s => s.StudyPlan)
                 .ThenInclude(p => p.StudyTasks)
+                .ThenInclude(t => t.Flashcards)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AIStudyPlanner.Domain.Enums;
 
 namespace AIStudyPlanner.Domain.Entities
@@ -14,5 +15,6 @@ namespace AIStudyPlanner.Domain.Entities
         public DateTime? CompletedAt { get; set; }
 
         public StudyPlan StudyPlan { get; set; } = null!;
+        public ICollection<Flashcard> Flashcards { get; set; } = new List<Flashcard>();
     }
 }

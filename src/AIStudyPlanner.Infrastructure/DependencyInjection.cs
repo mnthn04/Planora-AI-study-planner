@@ -33,8 +33,15 @@ namespace AIStudyPlanner.Infrastructure
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-            services.AddHttpClient<GeminiStudyPlannerService>();
-            services.AddScoped<IAIService, GeminiStudyPlannerService>();
+            services.AddHttpClient<GeminiStudyPlannerService>(client => 
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+            services.AddHttpClient<GroqStudyPlannerService>(client => 
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+            services.AddScoped<IAIService, FallbackAIService>();
             services.AddScoped<IJwtService, JwtService>();
 
             return services;

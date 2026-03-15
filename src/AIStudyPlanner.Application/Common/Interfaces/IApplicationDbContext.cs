@@ -11,6 +11,9 @@ namespace AIStudyPlanner.Application.Common.Interfaces
         DbSet<Topic> Topics { get; }
         DbSet<StudyPlan> StudyPlans { get; }
         DbSet<StudyTask> StudyTasks { get; }
+        DbSet<Flashcard> Flashcards { get; }
+        DbSet<PracticeTest> PracticeTests { get; }
+        DbSet<PracticeQuestion> PracticeQuestions { get; }
         
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
