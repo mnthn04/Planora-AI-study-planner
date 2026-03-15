@@ -1,0 +1,73 @@
+<div class="test-container soft-bg">
+    <div class="test-card glass-card">
+        <header class="test-header">
+            <h2 class="soft-gradient-text" *ngIf="!isFinished">Practice Test: Question {{currentIndex + 1}} /
+                {{questions.length}}</h2>
+            <h2 class="soft-gradient-text" *ngIf="isFinished">Test Completed!</h2>
+            <button class="btn-close" routerLink="/dashboard">✕</button>
+        </header>
+
+        <div *ngIf="loading" class="loader-container">
+            <div class="spinner"></div>
+            <p>AI is crafting your personal practice test...</p>
+        </div>
+
+        <div *ngIf="!loading && !isFinished" class="question-container">
+            <div class="progress-bar">
+                <div class="progress" [style.width.%]="((currentIndex + 1) / questions.length) * 100"></div>
+            </div>
+
+            <p class="question-text">{{ questions[currentIndex].question }}</p>
+
+            <div class="options-grid">
+                @for (option of questions[currentIndex].options; track option; let i = $index) {
+                <button class="option-btn" [class.selected]="userAnswers[currentIndex] === ['A', 'B', 'C', 'D'][i]"
+                    (click)="selectOption(option)">
+                    <span class="option-letter">{{ ['A', 'B', 'C', 'D'][i] }}</span>
+                    {{ option }}
+                </button>
+                }
+            </div>
+
+            <div class="navigation-footer">
+                <button class="btn-outline" (click)="prevQuestion()" [disabled]="currentIndex === 0">Previous</button>
+                <button class="btn-primary" (click)="nextQuestion()">
+                    {{ currentIndex === questions.length - 1 ? 'Finish Test' : 'Next Question' }}
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="isFinished" class="results-container">
+            <div class="score-circle">
+                <span class="score-value">{{ score }} / {{ questions.length }}</span>
+                <span class="score-label">Final Score</span>
+            </div>
+
+            <div class="performance-msg">
+                <h3 *ngIf="score >= 8">Excellent Job! 🌟</h3>
+                <h3 *ngIf="score >= 5 && score < 8">Good Progress! 👍</h3>
+                <h3 *ngIf="score < 5">Keep Studying! 📚</h3>
+                <p>Your results have been saved to your analytics.</p>
+            </div>
+
+            <div class="review-section">
+                <h3>Review Answers</h3>
+                <div class="review-list">
+                    @for (q of questions; track q; let i = $index) {
+                    <div class="review-item card" [class.correct]="userAnswers[i] === q.correctAnswer"
+                        [class.incorrect]="userAnswers[i] !== q.correctAnswer">
+                        <p class="review-question">Q{{i+1}}: {{ q.question }}</p>
+                        <p class="your-answer">Your Answer: <strong>{{ userAnswers[i] || 'None' }}</strong></p>
+                        <p class="correct-answer">Correct Answer: <strong>{{ q.correctAnswer }}</strong></p>
+                        <p class="explanation"><em>Note: {{ q.explanation }}</em></p>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <div class="action-footer">
+                <button class="btn-primary" routerLink="/dashboard">Return to Dashboard</button>
+            </div>
+        </div>
+    </div>
+</div>

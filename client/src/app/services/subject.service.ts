@@ -44,4 +44,12 @@ export class SubjectService {
         // We'll implement this endpoint in the backend if not present
         return this.http.patch(`${this.baseUrl}/tasks/${taskId}/status`, { status });
     }
+
+    getFlashcards(taskId: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.baseUrl}/flashcards/task/${taskId}`);
+    }
+
+    generateFlashcards(taskId: string): Observable<any[]> {
+        return this.http.post<any[]>(`${this.baseUrl}/flashcards/generate/${taskId}`, {});
+    }
 }

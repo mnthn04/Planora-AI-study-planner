@@ -1,0 +1,240 @@
+.test-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    background: radial-gradient(circle at top right, #f8f9ff 0%, #f0f4ff 100%);
+}
+
+.test-card {
+    width: 100%;
+    max-width: 800px;
+    padding: 2.5rem;
+    position: relative;
+    ANIMATION: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.test-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-close:hover {
+    color: #ef4444;
+}
+
+.loader-container {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e2e8f0;
+    border-top: 4px solid #6366f1;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.progress-bar {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    margin-bottom: 2.5rem;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.question-text {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 2.5rem;
+    line-height: 1.5;
+}
+
+.options-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.option-btn {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    text-align: left;
+    font-size: 1.1rem;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.option-btn:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    transform: translateX(4px);
+}
+
+.option-btn.selected {
+    border-color: #6366f1;
+    background: #f5f3ff;
+    color: #6366f1;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+}
+
+.option-letter {
+    width: 32px;
+    height: 32px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 1.25rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.option-btn.selected .option-letter {
+    background: #6366f1;
+    color: #ffffff;
+}
+
+.navigation-footer {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* Results styles */
+.results-container {
+    text-align: center;
+}
+
+.score-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    margin: 0 auto 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+}
+
+.score-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+}
+
+.score-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.performance-msg {
+    margin-bottom: 3rem;
+}
+
+.performance-msg h3 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.review-section {
+    text-align: left;
+    margin-bottom: 3rem;
+}
+
+.review-list {
+    display: grid;
+    gap: 1.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.review-item {
+    padding: 1.5rem;
+    border-left: 4px solid #e2e8f0;
+}
+
+.review-item.correct {
+    border-left-color: #10b981;
+    background: #f0fdf4;
+}
+
+.review-item.incorrect {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+}
+
+.review-question {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.your-answer,
+.correct-answer {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+.explanation {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #64748b;
+    padding-top: 0.75rem;
+    border-top: 1px dashed #e2e8f0;
+}

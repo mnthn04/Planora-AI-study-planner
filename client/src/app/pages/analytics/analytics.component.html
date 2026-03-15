@@ -46,6 +46,51 @@
             </div>
         </div>
     </div>
+
+    <!-- Practice Test Results -->
+    <div *ngIf="analyticsData.testStats" class="test-stats-section">
+        <h2 class="section-title">Practice Test Performance</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Tests Taken</span>
+                <span class="stat-value">{{ analyticsData.testStats.totalTests }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Average Score</span>
+                <span class="stat-value">{{ analyticsData.testStats.averageScore }}%</span>
+            </div>
+            <div class="stat-card highlight">
+                <span class="stat-label">Highest Score</span>
+                <span class="stat-value">{{ analyticsData.testStats.highestScore }}%</span>
+            </div>
+        </div>
+
+        <div class="recent-tests card">
+            <h3>Recent Test Results</h3>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Score</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let test of analyticsData.testStats.recentScores">
+                        <td>{{ test.subjectName }}</td>
+                        <td>
+                            <div class="score-pill" [class.high]="(test.score / test.totalQuestions) >= 0.8"
+                                [class.medium]="(test.score / test.totalQuestions) >= 0.5 && (test.score / test.totalQuestions) < 0.8"
+                                [class.low]="(test.score / test.totalQuestions) < 0.5">
+                                {{ test.score }} / {{ test.totalQuestions }}
+                            </div>
+                        </td>
+                        <td>{{ test.createdAt | date:'MMM d, y' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
     } @else {
     <div class="no-data-state">
         <div class="no-data-icon">📊</div>
